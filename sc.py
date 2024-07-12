@@ -44,7 +44,7 @@ def compare_embeddings(embedding1, embedding2, threshold=1.0):
     return distance.item() < threshold
 
 # Get embedding for the new image
-new_image_path = '11.jpg'
+new_image_path = '4.jpg'
 new_embedding = get_embedding(model, new_image_path)
 
 # Compare with each of the training embeddings and print the name

@@ -49,13 +49,16 @@ for user_folder in os.listdir(training_folder):
             user_embeddings[user_folder] = aggregate_embeddings(embeddings)
 
 # Function to compare embeddings using cosine similarity
-def compare_embeddings(embedding1, embedding2, threshold=0.1):
+def compare_embeddings(embedding1, embedding2, threshold=0.3):
     cosine_similarity = F.cosine_similarity(embedding1, embedding2)
     avg_similarity = torch.mean(cosine_similarity).item()
     return avg_similarity > threshold
 
 # Get embedding for the new image
-new_image_path = '6.jpg'
+# new_image_path = 'robert.jpg'
+# new_image_path = '3.jpg'
+new_image_path = 'henry.jpg'
+# new_image_path = '4.jpg'
 new_embedding = get_embedding(model, new_image_path)
 
 if new_embedding is not None:

@@ -4,6 +4,7 @@ import torch.nn.functional as F
 from facenet_pytorch import InceptionResnetV1, MTCNN
 from PIL import Image
 from torchvision import transforms
+import numpy as np
 
 # Load the MTCNN face detector
 mtcnn = MTCNN(keep_all=True)  # Set keep_all=True to detect multiple faces
@@ -15,26 +16,23 @@ model = InceptionResnetV1(pretrained='vggface2').eval()
 normalize = transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
 
 # Function to get embeddings from cropped faces
-# Function to get embeddings from cropped faces
 def get_embeddings(model, image_path):
     img = Image.open(image_path).convert('RGB')
     faces = mtcnn(img)
     embeddings = []
     if faces is not None:
         for face in faces:
-            face = normalize(face).unsqueeze(0)
+            # Apply normalization and reshape for the model input
+            face = normalize(face.unsqueeze(0))  # Add batch dimension and normalize
             with torch.no_grad():
-                embedding = model(face)
-            embeddings.append(embedding)
+                embedding = model(face)  # Assuming model output is a tensor
+            embeddings.append(embedding.squeeze().numpy())  # Convert to numpy array
     return embeddings
 
 # Folder containing training images
 training_folder = 'training_data/'
 
 # Generate embeddings for training images
-
-print("Creating Embeddings for dataset.....")
-
 user_embeddings = {}
 for user_folder in os.listdir(training_folder):
     user_folder_path = os.path.join(training_folder, user_folder)
@@ -48,18 +46,20 @@ for user_folder in os.listdir(training_folder):
                     embeddings.extend(embedding)
         if embeddings:
             user_embeddings[user_folder] = embeddings
-            print("Embeddings created done for dataset.....")
-            print("")
-            print("Comapring Embeddings.....")
 
 # Function to compare embeddings using cosine similarity
+# Function to compare embeddings using Euclidean distance
+# def compare_embeddings(embedding1, embedding2, threshold=0.9):
+#     euclidean_distance = np.linalg.norm(embedding1 - embedding2)
+#     return euclidean_distance < threshold
+
 def compare_embeddings(embedding1, embedding2, threshold=0.7):
-    cosine_similarity = F.cosine_similarity(embedding1, embedding2)
-    avg_similarity = torch.mean(cosine_similarity).item()
-    return avg_similarity > threshold
+    cosine_similarity = np.dot(embedding1, embedding2) / (np.linalg.norm(embedding1) * np.linalg.norm(embedding2))
+    return cosine_similarity > threshold
 
 # Get embeddings for the new image
-new_image_path = 'rg.jpg'
+new_image_path = 'hg2.jpg'
+# new_image_path = 'both.jpg'
 new_embeddings = get_embeddings(model, new_image_path)
 
 if new_embeddings:

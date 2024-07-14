@@ -57,7 +57,7 @@ def compare_embeddings(embedding1, embedding2, threshold=0.3):
 # Get embedding for the new image
 # new_image_path = 'robert.jpg'
 # new_image_path = '3.jpg'
-new_image_path = 'henry.jpg'
+new_image_path = 'both.jpg'
 # new_image_path = '4.jpg'
 new_embedding = get_embedding(model, new_image_path)
 

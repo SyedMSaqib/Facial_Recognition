@@ -32,6 +32,9 @@ def get_embeddings(model, image_path):
 training_folder = 'training_data/'
 
 # Generate embeddings for training images
+
+print("Creating Embeddings for dataset.....")
+
 user_embeddings = {}
 for user_folder in os.listdir(training_folder):
     user_folder_path = os.path.join(training_folder, user_folder)
@@ -45,6 +48,9 @@ for user_folder in os.listdir(training_folder):
                     embeddings.extend(embedding)
         if embeddings:
             user_embeddings[user_folder] = embeddings
+            print("Embeddings created done for dataset.....")
+            print("")
+            print("Comapring Embeddings.....")
 
 # Function to compare embeddings using cosine similarity
 def compare_embeddings(embedding1, embedding2, threshold=0.7):
@@ -53,7 +59,7 @@ def compare_embeddings(embedding1, embedding2, threshold=0.7):
     return avg_similarity > threshold
 
 # Get embeddings for the new image
-new_image_path = 'both.jpg'
+new_image_path = 'rg.jpg'
 new_embeddings = get_embeddings(model, new_image_path)
 
 if new_embeddings:

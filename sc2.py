@@ -54,7 +54,7 @@ for user_folder in os.listdir(training_folder):
 user_embeddings = np.array(user_embeddings)
 user_labels = np.array(user_labels)
 
-# Encode labels
+# Encode labelss
 label_encoder = LabelEncoder()
 user_labels_encoded = label_encoder.fit_transform(user_labels)
 

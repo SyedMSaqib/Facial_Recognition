@@ -29,7 +29,7 @@ def get_embeddings(model, image_path):
             face = normalize(face.unsqueeze(0))  # Add batch dimension and normalize
             with torch.no_grad():
                 embedding = model(face)  # Assuming model output is a tensor
-            embeddings.append(embedding.squeeze().numpy())  # Convert to numpy array
+            embeddings.append(embedding.squeeze().numpy())  # Convert to numpy arrays
     return embeddings
 
 # Folder containing training images

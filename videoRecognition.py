@@ -79,9 +79,9 @@ def process_video(video_path, output_path, model, svm_classifier, label_encoder)
             break
         
         frame_count += 1
-        if frame_count % 1 != 0:  # Process every 10th frame to save time
-            out.write(frame)
-            continue
+        # if frame_count % 1 != 0:  # Process every 10th frame to save time
+        #     out.write(frame)
+        #     continue
 
         # Convert the frame to PIL image
         pil_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))

@@ -11,29 +11,28 @@ import cv2
 
 
 def process_video(video_path, output_path, training_folders):
-# Load the MTCNN face detector
+
   
-  mtcnn = MTCNN(keep_all=True)  # Set keep_all=True to detect multiple faces
-  # Load the pretrained FaceNet model
+  mtcnn = MTCNN(keep_all=True)  
+
   model = InceptionResnetV1(pretrained='vggface2').eval()
   
-  # Define a normalization transformation
+
   normalize = transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
   
-  # Function to get embeddings from cropped faces
-  
+ 
   def get_embeddings(model, image):
       faces = mtcnn(image)
       embeddings = []
       boxes = []
       if faces is not None:
           for i, face in enumerate(faces):
-              # Apply normalization and reshape for the model input
-              face = normalize(face.unsqueeze(0))  # Add batch dimension and normalize
+             
+              face = normalize(face.unsqueeze(0))  
               with torch.no_grad():
-                  embedding = model(face)  # Assuming model output is a tensor
-              embeddings.append(embedding.squeeze().numpy())  # Convert to numpy arrays
-              boxes.append(mtcnn.detect(image)[0][i])  # Store the bounding box coordinates
+                  embedding = model(face)  
+              embeddings.append(embedding.squeeze().numpy()) 
+              boxes.append(mtcnn.detect(image)[0][i])  
       return embeddings, boxes
   
   # Folder containing training images
@@ -67,11 +66,11 @@ def process_video(video_path, output_path, training_folders):
   svm_classifier = SVC(kernel='linear', probability=True)
   svm_classifier.fit(user_embeddings, user_labels_encoded)
   
-  # Function to process video and identify faces
+
   
   cap = cv2.VideoCapture(video_path)
   frame_count = 0
-  # Define codec and create VideoWriter object
+
   fourcc = cv2.VideoWriter_fourcc(*'mp4v')
   out = cv2.VideoWriter(output_path, fourcc, 20.0, (int(cap.get(3)), int(cap.get(4))))
   while cap.isOpened():
@@ -80,13 +79,10 @@ def process_video(video_path, output_path, training_folders):
           break
       
       frame_count += 1
-      # if frame_count % 1 != 0:  # Process every 10th frame to save time
-      #     out.write(frame)
-      #     continue
-      # Convert the frame to PIL image
+    
       pil_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
       
-      # Get embeddings for the current frame
+    
       embeddings, boxes = get_embeddings(model, pil_image)
       
       if embeddings:
@@ -101,22 +97,18 @@ def process_video(video_path, output_path, training_folders):
               
               if best_match_confidence > 0.9:
                   label = f"{best_match_label[0]}: {best_match_confidence:.2f}"
-                  color = (0, 255, 0)  # Green for recognized faces
+                  color = (0, 255, 0)  
               else:
                   label = "No match"
-                  color = (0, 0, 255)  # Red for unrecognized faces
+                  color = (0, 0, 255)  
               
-              # Draw rectangle around face
               cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
-              # Draw label
               cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
       
-      # Write the frame with rectangles and labels to the output video
       out.write(frame)
   cap.release()
   out.release()
   
-  # Path to the video file
 video_path = 'videos/Harvard Commencement.mp4'
 output_path = 'output.mp4'
 images = 'images/'

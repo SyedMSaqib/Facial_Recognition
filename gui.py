@@ -92,7 +92,7 @@ def process_video(video_path, training_folder, result_text, progress_var):
     face_trackers = []
     max_distance = 50  # Maximum distance in pixels to consider the same face
 
-    frame_skip = 100  # Skip every other frame
+    frame_skip = 10  # Skip every other frame
     frame_count = 0
 
     while cap.isOpened():
@@ -134,7 +134,7 @@ def process_video(video_path, training_folder, result_text, progress_var):
                     face_trackers.append({'position': (center_x, center_y)})
                     total_faces += 1
 
-                    if best_match_confidence > 0.9:
+                    if best_match_confidence > 0.7:
                         if is_new_face(embedding, unique_embeddings, threshold):
                             unique_embeddings.append(embedding)
                             total_recognized_faces += 1

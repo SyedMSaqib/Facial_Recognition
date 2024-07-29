@@ -74,7 +74,7 @@ def process_video(video_path, training_folders):
     face_trackers = []
     max_distance = 50  # Maximum distance in pixels to consider the same face
 
-    frame_skip = 100  
+    frame_skip = 100  # Skip every other frame 
     frame_count = 0
 
     while cap.isOpened():

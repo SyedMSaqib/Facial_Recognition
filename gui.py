@@ -128,9 +128,8 @@ def process_video(video_path, training_folder, result_text, progress_var):
                         matched_tracker = tracker
                         break
 
-                if matched_tracker:
-                    matched_tracker['position'] = (center_x, center_y)
-                else:
+          
+                if matched_tracker==None:
                     face_trackers.append({'position': (center_x, center_y)})
                     total_faces += 1
 

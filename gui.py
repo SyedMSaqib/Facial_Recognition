@@ -21,15 +21,13 @@ def process_video(video_path, training_folder, result_text, progress_var):
     def get_embeddings(model, image):
         faces = mtcnn(image)
         embeddings = []
-        boxes = []
         if faces is not None:
-            for i, face in enumerate(faces):
+            for face in faces:
                 face = normalize(face.unsqueeze(0))
                 with torch.no_grad():
                     embedding = model(face)
                 embeddings.append(embedding.squeeze().numpy())
-                boxes.append(mtcnn.detect(image)[0][i])
-        return embeddings, boxes
+        return embeddings
 
     user_embeddings = []
     user_labels = []
@@ -50,7 +48,7 @@ def process_video(video_path, training_folder, result_text, progress_var):
                 image_path = os.path.join(user_folder_path, file_name)
                 print(f"Processing image: {image_path}")
                 img = Image.open(image_path).convert('RGB')
-                embeddings, _ = get_embeddings(model, img)
+                embeddings = get_embeddings(model, img)
                 if embeddings:
                     for embedding in embeddings:
                         user_embeddings.append(embedding)
@@ -89,10 +87,7 @@ def process_video(video_path, training_folder, result_text, progress_var):
                 return False
         return True
 
-    face_trackers = []
-    max_distance = 50  # Maximum distance in pixels to consider the same face
-
-    frame_skip = 10  # Skip every 10 frame
+    frame_skip = 10  # Skip every 10 frames
     frame_count = 0
 
     while cap.isOpened():
@@ -106,38 +101,23 @@ def process_video(video_path, training_folder, result_text, progress_var):
             continue
 
         pil_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        embeddings, boxes = get_embeddings(model, pil_image)
+        embeddings = get_embeddings(model, pil_image)
 
         if embeddings:
-            for idx, embedding in enumerate(embeddings):
+            for embedding in embeddings:
                 embedding = np.array(embedding).reshape(-1)
+                if is_new_face(embedding, unique_embeddings, threshold):
+                    unique_embeddings.append(embedding)
+                    total_faces += 1
+
                 predictions = svm_classifier.predict_proba(embedding.reshape(1, -1))
                 best_match_idx = np.argmax(predictions, axis=1)
                 best_match_label = label_encoder.inverse_transform(best_match_idx)
                 best_match_confidence = predictions[0, best_match_idx][0]
-                box = boxes[idx]
 
-                x1, y1, x2, y2 = [int(coord) for coord in box]
-                center_x, center_y = (x1 + x2) // 2, (y1 + y2) // 2
-
-                matched_tracker = None
-                for tracker in face_trackers:
-                    tracker_x, tracker_y = tracker['position']
-                    distance = np.sqrt((center_x - tracker_x) ** 2 + (center_y - tracker_y) ** 2)
-                    if distance < max_distance:
-                        matched_tracker = tracker
-                        break
-
-          
-                if matched_tracker==None:
-                    face_trackers.append({'position': (center_x, center_y)})
-                    total_faces += 1
-
-                    if best_match_confidence > 0.7:
-                        if is_new_face(embedding, unique_embeddings, threshold):
-                            unique_embeddings.append(embedding)
-                            total_recognized_faces += 1
-                            recognized_names.add(best_match_label[0])
+                if best_match_confidence > 0.8:
+                    recognized_names.add(best_match_label[0])
+                    total_recognized_faces = len(recognized_names)
 
     cap.release()
 
